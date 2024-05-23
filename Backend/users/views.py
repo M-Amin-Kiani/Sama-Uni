@@ -15,6 +15,10 @@ import operator
 from functools import reduce
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+import os
+from rest_framework.parsers import MultiPartParser, FormParser
+
 class MultipleFieldLookupMixin(object):
     def get_object(self):
         queryset = self.get_queryset() 
@@ -58,10 +62,13 @@ class LoginView(APIView):
                 student = None
                 professor = ProfessorProfile.objects.get(user=user)
             if student != None:
+                profile_picture_url = None
+                if student.profile_picture:
+                    profile_picture_url = student.profile_picture.url
                 user_data = {
-                    'studentid':student.id,
                     'id': user.id,
                     'role': "student",
+                    'studentid': student.id,
                     'username': user.username,
                     'first_name': user.first_name,
                     "last_name": user.last_name,
@@ -69,9 +76,20 @@ class LoginView(APIView):
                     'stu_no': student.stu_no,
                     'is_ta': student.is_ta,
                     'email': user.email,
+                    'profile_picture': profile_picture_url,
+                    'university': student.university,
+                    'college': student.college,
+                    'about_me': student.about_me,
+                    'gpa': student.gpa,
+                    'enter_year': student.enter_year,
+                    'major': student.major,
+                    'average': student.average,
                 }
                 return Response({"token": token.key, "user_data": user_data}, status=status.HTTP_200_OK)
             else:
+                profile_picture_url = None
+                if professor.profile_picture:
+                    profile_picture_url = professor.profile_picture
                 user_data = {
                 'professorid':professor.id,
                 'id': user.id,
@@ -81,6 +99,10 @@ class LoginView(APIView):
                 "last_name": user.last_name,
                 'national_no': professor.national_no,
                 'email': user.email,
+                'university': professor.university,
+                'college': professor.college,
+                'about_me': professor.about_me,
+                'profile_picture': profile_picture_url,
                 }
                 return Response({"token": token.key, "user_data": user_data}, status=status.HTTP_200_OK)
 
@@ -236,7 +258,13 @@ class StudentProfilePartialUpdateView(generics.UpdateAPIView):
         instance = self.get_object()
         instance.phone_no = request.data.get('phone_no', instance.phone_no)
         instance.is_ta = request.data.get('is_ta', instance.is_ta)  
-        instance.save(update_fields=['phone_no', 'is_ta'])  
+        instance.university = request.data.get('university', instance.university)
+        instance.college = request.data.get('college', instance.college)
+        instance.about_me = request.data.get('about_me', instance.about_me)
+        instance.gpa = request.data.get('gpa', instance.gpa)
+        instance.enter_year = request.data.get('enter_year', instance.enter_year)
+        instance.major = request.data.get('major', instance.major)
+        instance.save(update_fields=['phone_no', 'is_ta','university','college','about_me','gpa','enter_year','major'])  
         return super().partial_update(request, *args, **kwargs)
 
 class ProfessorProfilePartialUpdateView(generics.UpdateAPIView):
@@ -248,7 +276,10 @@ class ProfessorProfilePartialUpdateView(generics.UpdateAPIView):
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.national_no = request.data.get('national_no', instance.national_no)
-        instance.save(update_fields=['national_no'])
+        instance.university = request.data.get('university', instance.university)
+        instance.college = request.data.get('college', instance.college)
+        instance.about_me = request.data.get('about_me', instance.about_me)
+        instance.save(update_fields=['national_no','university','college','about_me'])
         return super().partial_update(request, *args, **kwargs)
 
 class CourseDeleteView(MultipleFieldLookupMixin, generics.DestroyAPIView):
@@ -257,3 +288,74 @@ class CourseDeleteView(MultipleFieldLookupMixin, generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'name' 
     lookup_fields = ('name', 'id')  
+
+
+@api_view(['GET', 'PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def student_profile_picture(request):
+    if request.method == 'GET':
+        try:
+            profile = StudentProfile.objects.get(user=request.user)
+            serializer = StudentProfileSerializer(profile)
+            return Response(serializer.data['profile_picture'])
+        except StudentProfile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    elif request.method in ['PUT', 'PATCH']:
+        parser_classes = (MultiPartParser, FormParser,)
+        profile = StudentProfile.objects.get(user=request.user)
+        serializer = StudentProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def professor_profile_picture(request):
+    if request.method == 'GET':
+        try:
+            profile = ProfessorProfile.objects.get(user=request.user)
+            serializer = ProfessorProfileSerializer(profile)
+            return Response(serializer.data['profile_picture'])
+        except ProfessorProfile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    elif request.method in ['PUT', 'PATCH']:
+        parser_classes = (MultiPartParser, FormParser,)
+        profile = ProfessorProfile.objects.get(user=request.user)
+        serializer = ProfessorProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])  
+def update_student_rate(request):
+    serializer = RateSerializer(data=request.data)
+    if serializer.is_valid():
+        student_id = serializer.validated_data['id']
+        rate = serializer.validated_data['rate']
+
+        professor_profile = None
+        try:
+            professor_profile = ProfessorProfile.objects.get(user=request.user)
+        except ProfessorProfile.DoesNotExist:
+            return Response({"error": "User is not a professor."}, status=403)
+
+        try:
+            student_profile = StudentProfile.objects.get(user__id=student_id)
+            student_profile.rate_sum += rate
+            student_profile.rate_count += 1
+            student_profile.average = student_profile.rate_sum // student_profile.rate_count
+            student_profile.save()
+
+            return Response({"average": student_profile.average}, status=status.HTTP_200_OK)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
