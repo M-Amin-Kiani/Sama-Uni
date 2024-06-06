@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from users.models import ProfessorProfile, StudentProfile, Course, Requests
+from users.models import ProfessorProfile, StudentProfile, Course, Requests, ProfessorFiles
 from django.contrib.auth import authenticate
 from rest_framework import generics
 
@@ -80,7 +80,7 @@ class CourseForHomeStudentSerializer(serializers.ModelSerializer):
         fields = ('id', 'term', 'required_TAs', 'minPoint', 'passCourse', 'description', 'professor', 'professorName', 'name')
 
     def get_professorName(self, obj):
-        return obj.professor.user.username
+        return obj.professor.user.first_name + " " + obj.professor.user.last_name
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -155,3 +155,18 @@ class RequestsSerializer(serializers.ModelSerializer):
 class RateSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     rate = serializers.IntegerField(min_value=0, max_value=5) 
+
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfessorFiles
+        fields = ['id', 'uploaded_by_student', 'file']
+
+    def create(self, validated_data):
+        # Create a new instance
+        return ProfessorFiles.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        # Update the existing instance
+        instance.file = validated_data.get('file', instance.file)
+        instance.save()
+        return instance
