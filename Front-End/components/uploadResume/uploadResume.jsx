@@ -2,7 +2,7 @@ import { createCourseRequestAPI } from "@/utils/api/course";
 import { UploadStudentResume } from "@/utils/api/user";
 import { falsyString } from "@/utils/falsyString";
 import { getUser } from "@/utils/user";
-import { Button } from "@mui/material";
+import { Button, Modal } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "react-toastify";

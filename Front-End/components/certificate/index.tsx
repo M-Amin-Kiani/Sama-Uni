@@ -42,17 +42,15 @@ function Certificate({
           {courseName}
         </p>
         <p className="text-[#02595E] text-center">
-          .at the University of Isfahan on the{" "}
+          Instructed by{" "}
+          <span className="text-[#31363F] font-medium">{instructorName}</span>{" "}
+          the University of Isfahan on the{" "}
           <span className="text-[#31363F] font-medium">{semester}</span>{" "}
           semester
-          <span className="text-[#31363F] font-medium">
-            {instructorName}
-          </span>{" "}
-          Instructed by{" "}
         </p>
         <hr className="border border-[#707070] w-80% mx-auto mt-4" />
         <p className="text-black text-center mt-4">
-          بدین وسیله گواهی می شود دانشجوی گرامی 
+          بدین وسیله گواهی میشود دانشجوی گرامی 
           <span className="text-[#31363F] font-medium">{studentName}</span>  با
           شماره دانشجویی  
           <span className="text-[#31363F] font-medium">{studentNumber}</span>
@@ -64,11 +62,11 @@ function Certificate({
           <span className="text-[#31363F] font-medium">{semester}</span>  به
           عنوان استادیار  درس با تعهد و تلاش مستمر، نقش مؤثری در پیشبرد اهداف
           آموزشی دوره داشته است و  خدمات آموزشی و پژوهشی ارزشمندی را در این
-          راستا ارائه داده است.
+          راستا ارائه داده است
         </p>
         <div className="flex flex-row-reverse mt-2">
           <img
-            src="/Uni-Logo-removebg-preview.png"
+            src="/Uni-Logo.png"
             alt="Image 1"
             style={{ width: "5rem", height: "5rem" }}
             className="w-32 h-32 mr-4"
@@ -77,10 +75,10 @@ function Certificate({
             <img
               src="/Signature.png "
               alt="Image 2"
-              style={{ width: "5rem", height: "4rem" }}
+              style={{ width: "5rem", height: "5rem" }}
               className="w-32 h-32"
             />
-            <p className="text-center text-gray-600 text-xs">معاونت آموزشی</p>
+            <p className="text-center text-black text-sm">معاونت آموزشی</p>
           </div>
         </div>
       </div>
