@@ -72,14 +72,14 @@ const ProfilePage = () => {
           "..."
         ) : (
           <div className="profile-info flex flex-col p-10 w-2/3 h-96 gap-10 bg-white shadow-md rounded-lg mt-4 max-auto">
-            <div className="profile-details flex flex-row items-center justify-center w-full space-x-6 lg-x-12 gap-36">
-              <div className="profile-picture-container w-3/6 flex items-start justify-start ml-4">
+            <div className="profile-details flex flex-row items-center justify-center w-full space-x-6 lg-x-12 2xl:gap-36">
+              <div className="profile-picture-container flex items-start justify-start ml-4">
                 <Image
                   src={profileUrl}
                   alt="profile"
                   width={150}
                   height={150}
-                  className="rounded-full border p-1 w-32 h-32 object-contain"
+                  className="rounded-full border p-1 min-w-32 h-32 object-contain"
                 />
               </div>
               <div className="profile-details-group-1 w-full flex flex-col gap-4">
