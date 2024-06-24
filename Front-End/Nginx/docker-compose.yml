@@ -14,7 +14,7 @@ x-app-variables: &app-variables
 
 services:
   web:
-    image: sama-back:1.1
+    image: aminkiani/unisama:2.1
     ports:
       - 8000:8000
     command: >
@@ -30,7 +30,7 @@ services:
       - postgres
 
   db_migrate:
-    image: sama-back:1.1
+    image: aminkiani/unisama:2.1
     command: >
       sh -c "python manage.py makemigrations &&
        python manage.py migrate"
@@ -52,11 +52,11 @@ services:
     environment: *database-variables
 
   frontend:
-    image: sama-front:1.1
+    image: aminkiani/unisama:1.1
     ports:
       - :3000:3000
   enginx:
-    image: sama-nginx:1
+    image: aminkiani/unisama:3.1
     ports:
       - 85:8080
     volumes: *service-volumes
